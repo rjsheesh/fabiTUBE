@@ -44,6 +44,7 @@ def download_video():
             'outtmpl': output_filename,
             'format': 'best', # 1080p নামাতে গেলে ffmpeg লাগবে, তাই 'best' (720p) সেফ
             'noplaylist': True,
+            'cookiefile': 'cookies.txt',  # <--- এই নতুন লাইনটা যোগ কর
             'quiet': True,
         }
 
@@ -75,4 +76,5 @@ def download_file(filename):
         return f"File not found or expired."
 
 if __name__ == '__main__':
+
     app.run(debug=True, port=5000)
