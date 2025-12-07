@@ -1,1 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 { color: #FF0000; margin-bottom: 10px; } /* YouTube Red */
+        p { color: #666; margin-bottom: 30px; }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            outline: none;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        input:focus { border-color: #FF0000; }
+        
+        button {
+            background: #FF0000;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+        }
+        button:hover { background: #cc0000; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
 
+        /* রেজাল্ট কার্ড */
+        #result { display: none; margin-top: 30px; animation: fadeIn 0.5s; }
+        .video-info {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .video-info img { width: 100%; object-fit: cover; }
+        .details { padding: 15px; }
+        .details h3 { margin: 0 0 10px; font-size: 16px; color: #333; }
+        .download-btn {
+            display: block;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .loader { display: none; margin-top: 15px; color: #FF0000; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>YouTube Saver</h1>
+    <p>Download HD videos instantly</p>
+
+    <div class="input-group">
+        <input type="text" id="url" placeholder="Paste YouTube Link Here...">
+    </div>
+    <button onclick="processVideo()" id="btn">Download Now</button>
+    
+    <div class="loader" id="loader">Processing video... Please wait...</div>
+
+    <div id="result">
+        <div class="video-info">
+            <img id="thumb" src="" alt="Thumbnail">
+            <div class="details">
+                <h3 id="title">Video Title</h3>
+                <small>Duration: <span id="duration">00:00</span></small>
+                <a id="dlLink" href="#" class="download-btn">Save Video</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function processVideo() {
+        const url = document.getElementById('url').value;
+        const btn = document.getElementById('btn');
+        const loader = document.getElementById('loader');
+        const result = document.getElementById('result');
+
+        if(!url) { alert("Please enter a YouTube link!"); return; }
+
+        // UI আপডেট
+        btn.disabled = true;
+        btn.innerText = "Checking...";
+        loader.style.display = 'block';
+        result.style.display = 'none';
+
+        try {
+            const res = await fetch('/api/yt-download', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url})
+            });
+
+            const data = await res.json();
+
+            if(data.success) {
+                document.getElementById('thumb').src = data.thumbnail;
+                document.getElementById('title').innerText = data.title;
+                document.getElementById('duration').innerText = data.duration;
+                document.getElementById('dlLink').href = data.download_url;
+                
+                result.style.display = 'block';
+            } else {
+                alert(data.message);
+            }
+        } catch (e) {
+            alert("Something went wrong!");
+            console.error(e);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Download Now";
+            loader.style.display = 'none';
+        }
+    }
+</script>
+
+</body>
+</html>
